@@ -12,7 +12,6 @@
 
 #include <Arduino.h>
 #include <WiFiClient.h>
-// #include <AsyncTelegram2.h>
 #include <vector>
 
 class Telegramz {
@@ -41,7 +40,6 @@ class Telegramz {
 
 public:
   Telegramz() {
-
   }
 
   void addAction(String text, TelegramCallBack toExecute) {
@@ -128,8 +126,6 @@ public:
     char int64_buf[22] = { 0 };
     snprintf(int64_buf, sizeof(int64_buf), "%lld", chat_id);
 
-    // Serial.println("formData");
-
     formData = "--" BOUNDARY "\r\nContent-disposition: form-data; name=\"chat_id\"\r\n\r\n";
     formData += int64_buf;
 
@@ -146,9 +142,6 @@ public:
     formData += type;
     formData += "\"\r\n\r\n";
 
-    // Serial.println(formData);
-    Serial.println("request");
-
     request = "POST /bot";
     request += botToken;
     request += "/";
@@ -160,8 +153,9 @@ public:
     request += (size + formData.length() + strlen(END_BOUNDARY));
     request += "\r\nContent-Type: multipart/form-data; boundary=" BOUNDARY "\r\n";
 
-    Serial.println(request);
-    Serial.println(formData);
+    // Serial.println("request");
+    // Serial.println(request);
+    // Serial.println(formData);
   }
 
   void sendPhotoAs(uint8_t *data, int size) {
@@ -185,9 +179,9 @@ public:
       int n_block = trunc(size / BLOCK_SIZE);
       int lastBytes = size - (n_block * BLOCK_SIZE);
 
-      Serial.println(size);
-      Serial.println(n_block);
-      Serial.println(lastBytes);
+      // Serial.println(size);
+      // Serial.println(n_block);
+      // Serial.println(lastBytes);
 
       for (pos = 0; pos < n_block; pos++) {
         client.write((const uint8_t *)data + pos * BLOCK_SIZE, BLOCK_SIZE);
@@ -202,7 +196,7 @@ public:
       Serial.printf("Raw upload time: %lums\n", millis() - t1);
       t1 = millis();
 #endif
-      Serial.println("\nSended!");
+      // Serial.println("\nSended!");
       while (client.available()) {
         char c = client.read();
         Serial.write(c);

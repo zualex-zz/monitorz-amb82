@@ -5,13 +5,13 @@
 #include "MotionDetection.h"
 #include "VideoStreamOverlay.h"
 #include "telegramz.h"
-#include "Base64.h"
+#include "webserverz.h"
 
-#define CHANNEL 0    // High resolution video channel for streaming
-#define CHANNELJPEG 1    // jpeg snapshot
-#define CHANNELMD 3  // RGB format video for motion detection only available on channel 3
+#define CHANNEL 0      // High resolution video channel for streaming
+#define CHANNELJPEG 1  // jpeg snapshot
+#define CHANNELMD 3    // RGB format video for motion detection only available on channel 3
 
-VideoSetting config(VIDEO_FHD, 30, VIDEO_H264, 0);   // High resolution video for streaming
+VideoSetting config(VIDEO_FHD, 30, VIDEO_H264, 0);  // High resolution video for streaming
 VideoSetting configJPG(VIDEO_FHD, CAM_FPS, VIDEO_JPEG, 1);
 VideoSetting configMD(VIDEO_VGA, 10, VIDEO_RGB, 0);  // Low resolution RGB video for motion detection
 RTSP rtsp;
@@ -19,12 +19,11 @@ StreamIO videoStreamer(1, 1);
 StreamIO videoStreamerMD(1, 1);
 MotionDetection MD;
 Telegramz *telegramz;
+Webserverz *webserverz;
 
 uint32_t TRIGGERtimer = 0;      // used for limiting camera motion trigger rate
 uint16_t TriggerLimitTime = 2;  // min time between motion detection trigger events (seconds)
 
-int encodedLen;
-char *encodedData;
 uint32_t img_addr = 0;
 uint32_t img_len = 0;
 
@@ -50,33 +49,17 @@ void mdPostProcess(std::vector<MotionDetectionResult> md_results) {
       int ymax = (int)(result.yMax() * config.height());
       // printf("%d:\t%d %d %d %d\n\r", i, xmin, xmax, ymin, ymax);
       OSD.drawRect(CHANNEL, xmin, ymin, xmax, ymax, 3, COLOR_GREEN);
-      Serial.print(i);
     }
-    Serial.println();
     Camera.getImage(CHANNELJPEG, &img_addr, &img_len);
-    // encodejpg();
+
     if ((unsigned long)(millis() - TRIGGERtimer) >= (TriggerLimitTime * 1000)) {  // limit time between triggers
       TRIGGERtimer = millis();                                                    // update last trigger time
-      Serial.println("Motion detected!");
+      Serial.println("Motion triggered!");
       // telegramz->send("Motion");
       telegramz->sendPhotoAs((uint8_t *)img_addr, img_len);
     }
   }
   OSD.update(CHANNEL);
-}
-
-void encodejpg() {
-  // Encode the file data as Base64
-  encodedLen = base64_enc_len(img_len);
-  encodedData = (char *)malloc(encodedLen);
-  base64_encode(encodedData, (char *)img_addr, img_len);
-
-  Serial.println("img_len");
-  Serial.println(img_len);
-  Serial.println("encodedLen");
-  Serial.println(encodedLen);
-  Serial.println("encodedData");
-  Serial.println(encodedData);
 }
 
 void setup() {
@@ -140,14 +123,11 @@ void setup() {
   telegramz = new Telegramz();
   telegramz->addAction("/takePicture", [](Telegramz *t) {
     Serial.println("take picture");
-    // camz->setFramesizePhoto();
-    // camera_fb_t *fb = camz->takePhoto();
-    // t->sendPhoto(fb);
-    // camz->reuseBuffer(fb);
-    // camz->setFramesizeMotion();
   });
+
+  webserverz = new Webserverz(CHANNELJPEG);
 }
 
 void loop() {
-  // Do nothing
+  webserverz->loop();
 }
