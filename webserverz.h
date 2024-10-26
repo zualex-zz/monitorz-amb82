@@ -29,6 +29,7 @@ class Webserverz {
     client.print("HTTP/1.1 200 OK\r\nContent-type: multipart/x-mixed-replace; boundary=");
     client.println(PART_BOUNDARY);
     client.print("Transfer-Encoding: chunked\r\n");
+    client.print("Access-Control-Allow-Origin: *\r\n");
     client.print("\r\n");
   }
 
@@ -50,8 +51,8 @@ public:
   }
 
   void loop() {
-    loopStreamServer();
     loopWebServer();
+    loopStreamServer();
   }
 
   void loopWebServer() {

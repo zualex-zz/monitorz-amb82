@@ -12,8 +12,7 @@ const char INDEX_page[] PROGMEM = R"=====(
 </style>
 
 <body>
-	<h1 style="background-color:DodgerBlue;">Hello! AmebaD mini</h1>
-	<p> Click <a href="https://www.amebaiot.com">here</a> if you like Ameba!</p>
+	<h1 style="background-color:DodgerBlue;">Motionz!</h1>
 	<img id="stream" src="" crossorigin>
 	<script>
 		var baseHost = document.location.origin;
